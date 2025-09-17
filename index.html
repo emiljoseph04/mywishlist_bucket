@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Wishlist Bucket</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .input-group .form-control,
+    .input-group .btn {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .input-group .form-control { border-radius: 50px 0 0 50px !important; }
+    .input-group .btn { border-radius: 0 50px 50px 0 !important; }
+    #wishlist { border: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid d-flex justify-content-center align-items-center vh-100" 
+       style="background: linear-gradient(135deg, #4b0082, #8a2be2, #dda0dd);">
+
+    <div class="card shadow-lg rounded-4 p-4" style="max-width: 600px; width: 100%; background-color: beige;">
+      <h1 class="text-center fw-bold mb-4" style="color: rgb(113, 46, 113);">My Wishlist Bucket</h1>
+      <div class="input-group mb-3">
+        <input type="text" id="itemInput" class="form-control" placeholder="Add something to your wishlist">
+        <button class="btn btn-primary fw-semibold" id="saveBtn">Save</button>
+        <button class="btn btn-secondary d-none" id="cancelEdit">Cancel</button>
+      </div>
+      
+      <ul id="wishlist" class="list-group"></ul>
+    </div>
+  </div>
+
+  <script>
+    let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+
+    const itemInput = document.getElementById("itemInput");
+    const wishlistElement = document.getElementById("wishlist");
+    const saveBtn = document.getElementById("saveBtn");
+    const cancelEditBtn = document.getElementById("cancelEdit");
+    let editIndex = "";
+
+    function displayWishlist() {
+      wishlistElement.innerHTML = "";
+      wishlist.forEach((item, index) => {
+        wishlistElement.innerHTML += `
+          <li class="list-group-item d-flex justify-content-between align-items-center mb-2 rounded-3 shadow-sm">
+            <span class="fw-semibold text-dark">${item.text}</span>
+            <div>
+              <button class="btn btn-sm btn-warning me-2 rounded-pill px-3" onclick="editItem(${index})">✏ Edit</button>
+              <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="deleteItem(${index})">🗑 Delete</button>
+            </div>
+          </li>`;
+      });
+    }
+
+    saveBtn.addEventListener("click", () => {
+      const text = itemInput.value.trim();
+      if (!text) return;
+
+      if (editIndex === "") {
+        wishlist.push({ text });
+      } else {
+        wishlist[editIndex] = { text };
+      }
+
+      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+      displayWishlist();
+      itemInput.value = "";
+      editIndex = "";
+      cancelEditBtn.classList.add("d-none");
+      saveBtn.textContent = "Save";
+    });
+
+    cancelEditBtn.addEventListener("click", () => {
+      itemInput.value = "";
+      editIndex = "";
+      cancelEditBtn.classList.add("d-none");
+      saveBtn.textContent = "Save";
+    });
+
+    function editItem(index) {
+      itemInput.value = wishlist[index].text;
+      editIndex = index;
+      cancelEditBtn.classList.remove("d-none");
+      saveBtn.textContent = "Update";
+    }
+
+    function deleteItem(index) {
+      if (confirm("Are you sure you want to delete this item from your wishlist?")) {
+        wishlist.splice(index, 1);
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+        displayWishlist();
+      }
+    }
+    displayWishlist();
+  </script>
+</body>
+</html>
