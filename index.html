@@ -6,32 +6,45 @@
   <title>My Wishlist Bucket</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .input-group .form-control,
-    .input-group .btn {
-      border: none !important;
-      box-shadow: none !important;
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .input-group .form-control { border-radius: 50px 0 0 50px !important; }
-    .input-group .btn { border-radius: 0 50px 50px 0 !important; }
+    .input-row input {
+      flex: 1;
+      border-radius: 50px;
+      border: none;
+      box-shadow: none;
+      padding-left: 15px;
+    }
+    .input-row button {
+      border-radius: 50px;
+    }
     #wishlist { border: none !important; }
+    .wishlist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .wishlist-text { flex: 1; }
+    .wishlist-buttons { white-space: nowrap; }
   </style>
 </head>
 <body>
   <div class="container-fluid d-flex justify-content-center align-items-center vh-100" 
        style="background: linear-gradient(135deg, #4b0082, #8a2be2, #dda0dd);">
-
     <div class="card shadow-lg rounded-4 p-4" style="max-width: 600px; width: 100%; background-color: beige;">
       <h1 class="text-center fw-bold mb-4" style="color: rgb(113, 46, 113);">My Wishlist Bucket</h1>
-      <div class="input-group mb-3">
+      <div class="input-row mb-3">
         <input type="text" id="itemInput" class="form-control" placeholder="Add something to your wishlist">
         <button class="btn btn-primary fw-semibold" id="saveBtn">Save</button>
         <button class="btn btn-secondary d-none" id="cancelEdit">Cancel</button>
       </div>
-      
       <ul id="wishlist" class="list-group"></ul>
     </div>
   </div>
-
   <script>
     let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
@@ -45,11 +58,20 @@
       wishlistElement.innerHTML = "";
       wishlist.forEach((item, index) => {
         wishlistElement.innerHTML += `
-          <li class="list-group-item d-flex justify-content-between align-items-center mb-2 rounded-3 shadow-sm">
-            <span class="fw-semibold text-dark">${item.text}</span>
-            <div>
-              <button class="btn btn-sm btn-warning me-2 rounded-pill px-3" onclick="editItem(${index})">✏ Edit</button>
-              <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="deleteItem(${index})">🗑 Delete</button>
+          <li class="list-group-item mb-2 rounded-3 shadow-sm wishlist-item">
+            <div class="wishlist-text">
+              <span class="fw-semibold text-dark ${item.done ? 'text-decoration-line-through text-muted' : ''}">
+                ${index + 1}. ${item.text}
+              </span>
+              <br>
+              <small class="text-muted">${item.date}</small>
+            </div>
+            <div class="wishlist-buttons">
+              <button class="btn btn-sm btn-success me-1 rounded-pill px-3" onclick="markDone(${index})">
+                ${item.done ? 'Undo' : ' Done'}
+              </button>
+              <button class="btn btn-sm btn-warning me-1 rounded-pill px-3" onclick="editItem(${index})">Edit</button>
+              <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="deleteItem(${index})">Delete</button>
             </div>
           </li>`;
       });
@@ -60,9 +82,9 @@
       if (!text) return;
 
       if (editIndex === "") {
-        wishlist.push({ text });
+        wishlist.push({ text, done: false, date: new Date().toLocaleString() });
       } else {
-        wishlist[editIndex] = { text };
+        wishlist[editIndex] = { ...wishlist[editIndex], text };
       }
 
       localStorage.setItem("wishlist", JSON.stringify(wishlist));
@@ -94,6 +116,13 @@
         displayWishlist();
       }
     }
+
+    function markDone(index) {
+      wishlist[index].done = !wishlist[index].done;
+      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+      displayWishlist();
+    }
+
     displayWishlist();
   </script>
 </body>
